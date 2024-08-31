@@ -18,7 +18,7 @@ public class Monster : MonoBehaviour
         playerController.GetScore();
     }
 
-    public void getAttack()
+    public void getAttack(int damage)
     {
         if (curHp <= 0)
         {
@@ -26,7 +26,7 @@ public class Monster : MonoBehaviour
             Die();
         }
 
-        curHp -= 1;
+        curHp -= damage;
         Debug.Log($"Ã¼·Â: {curHp}");
     }
 

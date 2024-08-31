@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PlayerController : MonoBehaviour
 {
@@ -7,9 +9,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float moveSpeed;
     [SerializeField] GameManager gameManager;
 
-    public float attack = 1;
     public int score = 0;
     public bool isMoving;
+
+    [SerializeField] int MaxBullet = 30;
+    [SerializeField] int CurBullet = 30;
+    [SerializeField] float repeatTime = 0.2f;
+    [SerializeField] float reloadTime = 2f;
+    [SerializeField] bool isReloading;
+    [SerializeField] public int attack = 1;
+
+    Coroutine fireRoutine;
 
     private void Start()
     {
@@ -25,7 +35,16 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0))
             {
-                Fire();
+                fireRoutine = StartCoroutine(FireRoutine());
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                StopCoroutine(fireRoutine);
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                Reload();
             }
         }
     }
@@ -50,6 +69,18 @@ public class PlayerController : MonoBehaviour
 
     private void Fire()
     {
+        if(CurBullet <= 0)
+        {
+            Debug.Log("탄알 부족, 재장전키는 R입니다.");
+            return;
+        }
+        if (isReloading)
+        {
+            Debug.Log("재장전 중..");
+            return;
+        }
+
+        CurBullet--;
         if (Physics.Raycast(camTransform.position, camTransform.forward, out RaycastHit hit))
         {
             GameObject instance = hit.collider.gameObject;
@@ -57,11 +88,39 @@ public class PlayerController : MonoBehaviour
 
             if (monster != null)
             {
-                monster.getAttack();
+                monster.getAttack(attack);
             }
         }
     }
 
+    IEnumerator FireRoutine()
+    {
+        WaitForSeconds delay = new WaitForSeconds(repeatTime);
+
+        while (true)
+        {
+            Fire();
+            yield return delay;
+        }
+    }
+
+    IEnumerator ReloadRoutine()
+    {
+        WaitForSeconds delay = new WaitForSeconds(reloadTime);
+        Debug.Log("재장전 시작");
+        isReloading = true;
+        yield return delay;
+        CurBullet = MaxBullet;
+        isReloading = false;
+        Debug.Log("재장전 완료");
+    }
+
+
+    private void Reload()
+    {
+        if (isReloading) return;
+        StartCoroutine(ReloadRoutine());
+    }
     public void PlayerMove()
     {
         isMoving = true;
