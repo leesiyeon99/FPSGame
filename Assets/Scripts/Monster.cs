@@ -5,23 +5,33 @@ using UnityEngine.Events;
 
 public class Monster : MonoBehaviour
 {
+    [SerializeField] MonsterSpawner monsterSpawner;
     [SerializeField] PlayerController playerController;
-    float hp = 10;
-    public void TakeHit()
+    float maxHp = 10;
+    float curHp = 10;
+
+    public UnityEvent<Monster> onDied;
+    public void Die()
     {
+        monsterSpawner.Respawn(this);
+        gameObject.SetActive(false);
         playerController.GetScore();
-        Debug.Log("몬스터 파괴");
-        Destroy(gameObject);
     }
 
-    public void MonsterAttack()
+    public void getAttack()
     {
-        if (hp <= 0)
+        if (curHp <= 0)
         {
-            TakeHit();
+            onDied?.Invoke(this);
+            Die();
         }
 
-        hp -= 1;
-        Debug.Log($"체력: {hp}");
+        curHp -= 1;
+        Debug.Log($"체력: {curHp}");
+    }
+
+    public void ResetHp()
+    {
+        curHp = maxHp;
     }
 }

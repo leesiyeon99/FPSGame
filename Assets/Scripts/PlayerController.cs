@@ -57,7 +57,7 @@ public class PlayerController : MonoBehaviour
 
             if (monster != null)
             {
-                monster.MonsterAttack();
+                monster.getAttack();
             }
         }
     }
